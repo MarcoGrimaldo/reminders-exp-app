@@ -1,50 +1,99 @@
-# Welcome to your Expo app 👋
+# Reminders App
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A modern, intuitive task management application built with Expo and React Native. This app helps you organize your tasks with labels, scheduling, and a beautiful user interface that supports both light and dark themes.
 
-## Get started
+![Reminders App](assets/images/icon.png)
 
-1. Install dependencies
+## Features
 
+- **Task Management**: Create, edit, and delete tasks with ease
+- **Labels & Categories**: Organize tasks with customizable labels
+- **Scheduling**: Set tasks for today or schedule them for future dates
+- **Recurring Tasks**: Create tasks that repeat on specific days
+- **Theme Support**: Light and dark themes with automatic system preference detection
+- **Responsive Design**: Works on both iOS and Android devices
+- **Gesture Controls**: Swipe to delete tasks
+- **Persistent Storage**: Your tasks are saved locally on your device
+
+## Screenshots
+
+(Screenshots would be added here)
+
+## Installation
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/yourusername/reminders-exp-app.git
+   cd reminders-exp-app
+   ```
+
+2. Install dependencies:
    ```bash
    npm install
    ```
 
-2. Start the app
-
+3. Start the development server:
    ```bash
-    npx expo start
+   npx expo start
    ```
 
-In the output, you'll find options to open the app in a
+4. Run on your preferred platform:
+   - Press `i` to open in iOS simulator
+   - Press `a` to open in Android emulator
+   - Scan the QR code with the Expo Go app on your physical device
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+## Usage
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+### Adding Tasks
+- Tap the "+" button in the top right corner
+- Enter task details including title, label, and schedule
+- Save your task
 
-## Get a fresh project
+### Managing Tasks
+- Tasks are automatically organized into "For Today", "To Do Also", and "Upcoming" sections
+- Tap the checkbox to mark a task as complete
+- Swipe left on a task to delete it
 
-When you're ready, run:
+### Changing Theme
+- Tap the sun/moon icon in the top right to toggle between light and dark themes
+- The app will also respect your system theme preferences
 
+## Development
+
+### Project Structure
+- `/app`: Main application screens using Expo Router
+- `/components`: Reusable UI components
+- `/constants`: App constants and theme configuration
+- `/context`: React Context providers
+- `/hooks`: Custom React hooks
+- `/utils`: Utility functions
+
+### Key Technologies
+- [Expo](https://expo.dev/): React Native development platform
+- [Expo Router](https://docs.expo.dev/router/introduction/): File-based routing
+- [React Native](https://reactnative.dev/): Cross-platform UI framework
+- [Moti](https://moti.fyi/): Animation library
+- [React Native Gesture Handler](https://docs.swmansion.com/react-native-gesture-handler/): Gesture recognition
+- [AsyncStorage](https://react-native-async-storage.github.io/async-storage/): Local data persistence
+
+### Building for Production
 ```bash
-npm run reset-project
+# For iOS
+npx expo build:ios
+
+# For Android
+npx expo build:android
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## Contributing
 
-## Learn more
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-To learn more about developing your project with Expo, look at the following resources:
+## License
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+This project is licensed under the MIT License - see the LICENSE file for details.
 
-## Join the community
+## Acknowledgments
 
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+- Icons provided by [Expo Vector Icons](https://docs.expo.dev/guides/icons/)
+- Inspired by modern task management applications
