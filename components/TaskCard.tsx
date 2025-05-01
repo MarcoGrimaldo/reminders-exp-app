@@ -5,6 +5,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   Pressable,
+  ViewStyle,
 } from "react-native";
 import { MotiView, AnimatePresence } from "moti";
 import { Ionicons } from "@expo/vector-icons";
@@ -24,22 +25,69 @@ type Task = {
     repeatDays?: string[];
     date?: string;
   };
+  lastCompletedDate?: string;
 };
 
-interface Props {
+type Props = {
   task: Task;
-  onDelete: () => void;
   onToggle: () => void;
+  onDelete: () => void;
   showSchedule?: boolean;
-}
+};
 
-export default function TaskCard({
-  task,
-  onDelete,
-  onToggle,
-  showSchedule,
-}: Props) {
+export default function TaskCard({ task, onToggle, onDelete, showSchedule }: Props) {
   const { theme } = useTheme();
+  const today = new Date().toISOString().split("T")[0];
+
+  const getCheckboxStyle = (): ViewStyle => {
+    const baseStyle: ViewStyle = {
+      width: 24,
+      height: 24,
+      borderRadius: 6,
+      justifyContent: "center",
+      alignItems: "center",
+      marginRight: 12,
+    };
+
+    // Task completed today
+    if (task.completed && task.lastCompletedDate === today) {
+      return {
+        ...baseStyle,
+        backgroundColor: theme.colors.primary,
+        borderWidth: 0,
+      };
+    }
+
+    // Task permanently completed (non-recurring or past scheduled task)
+    if (task.completed) {
+      const isPermanentlyCompleted = !task.schedule?.repeatDays;
+      if (isPermanentlyCompleted) {
+        return {
+          ...baseStyle,
+          backgroundColor: theme.colors.border,
+          borderWidth: 0,
+        };
+      }
+    }
+
+    // Default uncompleted state
+    return {
+      ...baseStyle,
+      backgroundColor: "transparent",
+      borderWidth: 2,
+      borderColor: theme.colors.border,
+    };
+  };
+
+  const getCheckboxIcon = () => {
+    if (!task.completed) return null;
+
+    const isCompletedToday = task.lastCompletedDate === today;
+    const iconName = isCompletedToday ? "checkmark-sharp" : "lock-closed";
+    const iconColor = isCompletedToday ? "#fff" : theme.colors.text;
+
+    return <Ionicons name={iconName} size={16} color={iconColor} />;
+  };
 
   return (
     <GestureHandlerRootView>
@@ -64,11 +112,16 @@ export default function TaskCard({
             transition={{ type: "timing", duration: 300 }}
             style={[styles.card, { backgroundColor: theme.colors.card }]}
           >
-            <Checkbox
-              value={task.completed}
-              onValueChange={onToggle}
-              color={task.completed ? theme.colors.primary : undefined}
-            />
+            <TouchableOpacity
+              style={getCheckboxStyle()}
+              onPress={onToggle}
+              disabled={
+                task.completed &&
+                (!task.schedule?.repeatDays || task.lastCompletedDate === today)
+              }
+            >
+              {getCheckboxIcon()}
+            </TouchableOpacity>
             <Text
               style={[
                 styles.text,

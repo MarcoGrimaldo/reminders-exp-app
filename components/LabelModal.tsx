@@ -9,6 +9,7 @@ import {
   Modal,
   FlatList,
 } from "react-native";
+import { useTheme } from "../context/ThemeContext";
 
 const colorOptions = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6"];
 
@@ -21,6 +22,7 @@ interface Props {
 export default function LabelModal({ visible, onClose, onSave }: Props) {
   const [labelName, setLabelName] = useState("");
   const [selectedColor, setSelectedColor] = useState(colorOptions[0]);
+  const { theme } = useTheme();
 
   const handleSave = () => {
     if (!labelName.trim()) return;
@@ -33,15 +35,29 @@ export default function LabelModal({ visible, onClose, onSave }: Props) {
   return (
     <Modal transparent visible={visible} animationType="slide">
       <View style={styles.overlay}>
-        <View style={styles.container}>
-          <Text style={styles.title}>Create Label</Text>
+        <View
+          style={[styles.container, { backgroundColor: theme.colors.card }]}
+        >
+          <Text style={[styles.title, { color: theme.colors.text }]}>
+            Create Label
+          </Text>
           <TextInput
             value={labelName}
             onChangeText={setLabelName}
             placeholder="Label name"
-            style={styles.input}
+            placeholderTextColor={theme.colors.secondary}
+            style={[
+              styles.input,
+              {
+                borderColor: theme.colors.border,
+                color: theme.colors.text,
+                backgroundColor: theme.colors.background,
+              },
+            ]}
           />
-          <Text style={styles.subtitle}>Choose color:</Text>
+          <Text style={[styles.subtitle, { color: theme.colors.text }]}>
+            Choose color:
+          </Text>
           <FlatList
             horizontal
             data={colorOptions}
@@ -53,18 +69,25 @@ export default function LabelModal({ visible, onClose, onSave }: Props) {
                   {
                     backgroundColor: item,
                     borderWidth: item === selectedColor ? 3 : 0,
-                    borderColor: "#000",
+                    borderColor: theme.colors.text,
                   },
                 ]}
                 onPress={() => setSelectedColor(item)}
               />
             )}
           />
-          <TouchableOpacity style={styles.saveBtn} onPress={handleSave}>
+          <TouchableOpacity
+            style={[styles.saveBtn, { backgroundColor: theme.colors.primary }]}
+            onPress={handleSave}
+          >
             <Text style={styles.saveText}>Save</Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={onClose}>
-            <Text style={styles.cancelText}>Cancel</Text>
+            <Text
+              style={[styles.cancelText, { color: theme.colors.secondary }]}
+            >
+              Cancel
+            </Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -80,7 +103,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   container: {
-    backgroundColor: "#fff",
     width: "85%",
     padding: 20,
     borderRadius: 12,
@@ -96,7 +118,6 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderColor: "#d1d5db",
     padding: 10,
     borderRadius: 8,
   },
@@ -109,7 +130,6 @@ const styles = StyleSheet.create({
   },
   saveBtn: {
     marginTop: 16,
-    backgroundColor: "#1e40af",
     paddingVertical: 10,
     borderRadius: 8,
     alignItems: "center",
@@ -121,6 +141,5 @@ const styles = StyleSheet.create({
   cancelText: {
     marginTop: 10,
     textAlign: "center",
-    color: "#6b7280",
   },
 });

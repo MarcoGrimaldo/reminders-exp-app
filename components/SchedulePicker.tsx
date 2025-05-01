@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import { Ionicons } from "@expo/vector-icons";
+import { useTheme } from "../context/ThemeContext";
 
 type Props = {
   value: {
@@ -32,6 +33,7 @@ const daysOfWeek = [
 export default function SchedulePicker({ value, onChange }: Props) {
   const [expanded, setExpanded] = useState(false);
   const [calendarVisible, setCalendarVisible] = useState(false);
+  const { theme } = useTheme();
 
   const toggleDay = (day: string) => {
     const current = value?.repeatDays || [];
@@ -61,26 +63,50 @@ export default function SchedulePicker({ value, onChange }: Props) {
   return (
     <View>
       <TouchableOpacity
-        style={styles.dropdown}
+        style={[
+          styles.dropdown,
+          {
+            borderColor: theme.colors.border,
+            backgroundColor: theme.colors.card,
+          },
+        ]}
         onPress={() => setExpanded((prev) => !prev)}
       >
-        <Text style={styles.dropdownText}>Schedule: {displayLabel()}</Text>
-        <Ionicons name="chevron-down" size={18} />
+        <Text style={[styles.dropdownText, { color: theme.colors.text }]}>
+          Schedule: {displayLabel()}
+        </Text>
+        <Ionicons name="chevron-down" size={18} color={theme.colors.text} />
       </TouchableOpacity>
 
       {expanded && (
-        <View style={styles.menu}>
-          <TouchableOpacity style={styles.option} onPress={clearSchedule}>
-            <Text style={styles.optionText}>Nop</Text>
+        <View
+          style={[
+            styles.menu,
+            {
+              backgroundColor: theme.colors.card,
+              borderColor: theme.colors.border,
+            },
+          ]}
+        >
+          <TouchableOpacity
+            style={[styles.option, { borderBottomColor: theme.colors.border }]}
+            onPress={clearSchedule}
+          >
+            <Text style={[styles.optionText, { color: theme.colors.text }]}>
+              Nop
+            </Text>
           </TouchableOpacity>
 
           {daysOfWeek.map((day) => (
             <TouchableOpacity
               key={day}
-              style={styles.option}
+              style={[
+                styles.option,
+                { borderBottomColor: theme.colors.border },
+              ]}
               onPress={() => toggleDay(day)}
             >
-              <Text style={styles.optionText}>
+              <Text style={[styles.optionText, { color: theme.colors.text }]}>
                 {value?.repeatDays?.includes(day) ? "✅ " : ""}
                 {day}s
               </Text>
@@ -88,14 +114,20 @@ export default function SchedulePicker({ value, onChange }: Props) {
           ))}
 
           <TouchableOpacity
-            style={styles.option}
+            style={[styles.option, { borderBottomColor: theme.colors.border }]}
             onPress={() => {
               setCalendarVisible(true);
               setExpanded(false);
             }}
           >
-            <Text style={styles.optionText}>Select day on calendar</Text>
-            <Ionicons name="calendar-outline" size={18} />
+            <Text style={[styles.optionText, { color: theme.colors.text }]}>
+              Select day on calendar
+            </Text>
+            <Ionicons
+              name="calendar-outline"
+              size={18}
+              color={theme.colors.text}
+            />
           </TouchableOpacity>
         </View>
       )}
@@ -105,6 +137,7 @@ export default function SchedulePicker({ value, onChange }: Props) {
         mode="date"
         onConfirm={handleDatePicked}
         onCancel={() => setCalendarVisible(false)}
+        themeVariant={theme.colors.background === "#ffffff" ? "light" : "dark"}
       />
     </View>
   );
@@ -113,10 +146,8 @@ export default function SchedulePicker({ value, onChange }: Props) {
 const styles = StyleSheet.create({
   dropdown: {
     borderWidth: 1,
-    borderColor: "#ccc",
     padding: 12,
     borderRadius: 8,
-    backgroundColor: "#fff",
     marginTop: 8,
     flexDirection: "row",
     justifyContent: "space-between",
@@ -127,16 +158,13 @@ const styles = StyleSheet.create({
   },
   menu: {
     marginTop: 8,
-    backgroundColor: "#fff",
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: "#ccc",
     overflow: "hidden",
   },
   option: {
     padding: 12,
     borderBottomWidth: 1,
-    borderBottomColor: "#eee",
     flexDirection: "row",
     justifyContent: "space-between",
   },

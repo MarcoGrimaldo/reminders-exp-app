@@ -13,6 +13,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import { v4 as uuidv4 } from "uuid";
 import "react-native-get-random-values";
+import { useTheme } from "../../context/ThemeContext";
+import SafeAreaWrapper from "../../components/SafeAreaWrapper";
 
 import LabelChip from "../../components/LabelChip";
 import LabelModal from "../../components/LabelModal";
@@ -54,6 +56,7 @@ export default function AddTaskScreen() {
   const [modalVisible, setModalVisible] = useState(false);
   const [textError, setTextError] = useState<string | null>(null);
   const router = useRouter();
+  const { theme } = useTheme();
 
   useEffect(() => {
     loadLabels();
@@ -123,60 +126,83 @@ export default function AddTaskScreen() {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.select({ ios: "padding", android: undefined })}
-    >
-      <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
-        <Text style={styles.label}>What task do you want to add?</Text>
-        <TextInput
-          value={text}
-          onChangeText={setText}
-          placeholder="Enter task..."
-          style={styles.input}
-        />
-        {textError && <Text style={styles.error}>{textError}</Text>}
-        <Text style={styles.label}>Labels:</Text>
-        <View style={styles.labelsContainer}>
-          <LabelChip
-            label="None"
-            color="#d1d5db"
-            selected={!selectedLabel}
-            onPress={() => setSelectedLabel(null)}
+    <SafeAreaWrapper>
+      <KeyboardAvoidingView
+        style={[styles.container, { backgroundColor: theme.colors.background }]}
+        behavior={Platform.select({ ios: "padding", android: undefined })}
+      >
+        <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
+          <Text style={[styles.label, { color: theme.colors.text }]}>
+            What task do you want to add?
+          </Text>
+          <TextInput
+            value={text}
+            onChangeText={setText}
+            placeholder="Enter task..."
+            placeholderTextColor={theme.colors.secondary}
+            style={[
+              styles.input,
+              {
+                backgroundColor: theme.colors.card,
+                borderColor: theme.colors.border,
+                color: theme.colors.text,
+              },
+            ]}
           />
-          <LabelChip
-            label="+ Create one"
-            color="#1e3a8a"
-            selected={false}
-            onPress={() => setModalVisible(true)}
-          />
-          {labels.map((lbl) => (
+          {textError && (
+            <Text style={[styles.error, { color: theme.colors.error }]}>
+              {textError}
+            </Text>
+          )}
+          <Text style={[styles.label, { color: theme.colors.text }]}>
+            Labels:
+          </Text>
+          <View style={styles.labelsContainer}>
             <LabelChip
-              key={lbl.name}
-              label={lbl.name}
-              color={lbl.color}
-              selected={
-                selectedLabel?.name.toLowerCase() === lbl.name.toLowerCase()
-              }
-              onPress={() => setSelectedLabel(lbl)}
+              label="None"
+              color="#d1d5db"
+              selected={!selectedLabel}
+              onPress={() => setSelectedLabel(null)}
             />
-          ))}
-        </View>
+            <LabelChip
+              label="+ Create one"
+              color={theme.colors.primary}
+              selected={false}
+              onPress={() => setModalVisible(true)}
+            />
+            {labels.map((lbl) => (
+              <LabelChip
+                key={lbl.name}
+                label={lbl.name}
+                color={lbl.color}
+                selected={
+                  selectedLabel?.name.toLowerCase() === lbl.name.toLowerCase()
+                }
+                onPress={() => setSelectedLabel(lbl)}
+              />
+            ))}
+          </View>
 
-        <Text style={styles.label}>Schedule:</Text>
-        <SchedulePicker value={schedule} onChange={setSchedule} />
+          <Text style={[styles.label, { color: theme.colors.text }]}>
+            Schedule:
+          </Text>
+          <SchedulePicker value={schedule} onChange={setSchedule} />
 
-        <TouchableOpacity style={styles.button} onPress={addTask}>
-          <Text style={styles.buttonText}>Add Task</Text>
-        </TouchableOpacity>
-      </ScrollView>
+          <TouchableOpacity
+            style={[styles.button, { backgroundColor: theme.colors.primary }]}
+            onPress={addTask}
+          >
+            <Text style={styles.buttonText}>Add Task</Text>
+          </TouchableOpacity>
+        </ScrollView>
 
-      <LabelModal
-        visible={modalVisible}
-        onClose={() => setModalVisible(false)}
-        onSave={saveNewLabel}
-      />
-    </KeyboardAvoidingView>
+        <LabelModal
+          visible={modalVisible}
+          onClose={() => setModalVisible(false)}
+          onSave={saveNewLabel}
+        />
+      </KeyboardAvoidingView>
+    </SafeAreaWrapper>
   );
 }
 
@@ -184,20 +210,17 @@ const styles = StyleSheet.create({
   container: {
     padding: 24,
     flex: 1,
-    backgroundColor: "#f8fafc",
   },
   label: {
     fontSize: 18,
     marginBottom: 8,
   },
   input: {
-    backgroundColor: "#fff",
     borderRadius: 8,
     padding: 12,
     fontSize: 16,
     marginBottom: 20,
     borderWidth: 1,
-    borderColor: "#d1d5db",
   },
   labelsContainer: {
     flexDirection: "row",
@@ -205,7 +228,6 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   button: {
-    backgroundColor: "#1e40af",
     padding: 14,
     borderRadius: 8,
     alignItems: "center",
@@ -216,7 +238,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   error: {
-    color: "#ef4444",
     marginBottom: 10,
   },
 });

@@ -12,6 +12,10 @@ import { useFocusEffect, useRouter } from "expo-router";
 import TaskCard from "../components/TaskCard";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "../context/ThemeContext";
+import SafeAreaWrapper from "../components/SafeAreaWrapper";
+import RankProgressBar from "../components/RankProgressBar";
+import TaskVerificationModal from "../components/TaskVerificationModal";
+import DebugMenu from "../components/DebugMenu";
 
 type Task = {
   id: string;
@@ -22,6 +26,7 @@ type Task = {
     repeatDays?: string[];
     date?: string;
   };
+  lastCompletedDate?: string;
 };
 
 type LabelGroup = { [label: string]: Task[] };
@@ -53,6 +58,9 @@ export default function HomeScreen() {
   const router = useRouter();
   const appState = useRef(AppState.currentState);
   const { theme, isDark, toggleTheme } = useTheme();
+  const [verificationModalVisible, setVerificationModalVisible] =
+    useState(false);
+  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
 
   useEffect(() => {
     const sub = AppState.addEventListener("change", (nextState) => {
@@ -88,8 +96,21 @@ export default function HomeScreen() {
   };
 
   const resetRecurringTaskStatus = async () => {
+    const today = new Date().toISOString().split("T")[0];
+    const todayKey = new Date().toLocaleDateString("en-US", {
+      weekday: "long",
+    });
+
     const updated = tasks.map((task) => {
-      if (task.schedule?.repeatDays?.length) {
+      // Reset status for recurring tasks that were completed on a different day
+      if (
+        task.schedule?.repeatDays?.length &&
+        task.lastCompletedDate !== today
+      ) {
+        return { ...task, completed: false };
+      }
+      // Reset one-time scheduled tasks for today that were completed on a different day
+      if (task.schedule?.date === today && task.lastCompletedDate !== today) {
         return { ...task, completed: false };
       }
       return task;
@@ -130,8 +151,9 @@ export default function HomeScreen() {
   };
 
   const toggleTask = async (id: string) => {
+    const today = new Date().toISOString().split("T")[0];
     const updated = tasks.map((t) =>
-      t.id === id ? { ...t, completed: !t.completed } : t
+      t.id === id ? { ...t, completed: true, lastCompletedDate: today } : t
     );
     saveTasks(updated);
   };
@@ -183,7 +205,7 @@ export default function HomeScreen() {
             <TaskCard
               key={task.id}
               task={task}
-              onToggle={() => toggleTask(task.id)}
+              onToggle={() => handleTaskToggle(task.id)}
               onDelete={() => deleteTask(task.id)}
               showSchedule={showSchedule}
             />
@@ -193,36 +215,92 @@ export default function HomeScreen() {
     </View>
   );
 
-  return (
-    <View
-      style={[styles.container, { backgroundColor: theme.colors.background }]}
-    >
-      <View style={styles.header}>
-        <Text style={[styles.title, { color: theme.colors.text }]}>
-          Reminders
-        </Text>
-        <View style={styles.headerButtons}>
-          <TouchableOpacity onPress={toggleTheme} style={styles.themeButton}>
-            <Ionicons
-              name={isDark ? "sunny" : "moon"}
-              size={24}
-              color={theme.colors.primary}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => router.push("/reminders/add-reminder")}
-          >
-            <Ionicons name="add" size={30} color={theme.colors.primary} />
-          </TouchableOpacity>
-        </View>
-      </View>
+  const handleTaskToggle = (id: string) => {
+    const task = tasks.find((t) => t.id === id);
+    if (!task) return;
 
-      <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
-        {renderSection("For Today", todayTasks)}
-        {renderSection("To Do Also", noScheduleTasks)}
-        {renderSection("Upcoming", upcomingTasks, true)}
-      </ScrollView>
-    </View>
+    const today = new Date().toISOString().split("T")[0];
+
+    // If task is already completed today, don't allow toggling
+    if (task.completed && task.lastCompletedDate === today) {
+      return;
+    }
+
+    // For scheduled tasks, check if it's a repeating task
+    if (task.schedule) {
+      // If it's a one-time scheduled task and already completed, don't allow toggling
+      if (task.schedule.date && task.completed) {
+        return;
+      }
+      // For repeating tasks, allow toggle if it's a new day
+      if (task.schedule.repeatDays && task.lastCompletedDate === today) {
+        return;
+      }
+    } else {
+      // For non-scheduled tasks, if completed, don't allow toggling
+      if (task.completed) {
+        return;
+      }
+    }
+
+    setSelectedTaskId(id);
+    setVerificationModalVisible(true);
+  };
+
+  const handleVerificationConfirm = () => {
+    if (selectedTaskId) {
+      toggleTask(selectedTaskId);
+    }
+    setVerificationModalVisible(false);
+    setSelectedTaskId(null);
+  };
+
+  const handleAppReset = () => {
+    loadTasks();
+    loadLabelColors();
+  };
+
+  return (
+    <SafeAreaWrapper>
+      <View
+        style={[styles.container, { backgroundColor: theme.colors.background }]}
+      >
+        <RankProgressBar />
+        <View style={styles.header}>
+          <Text style={[styles.title, { color: theme.colors.text }]}>
+            Reminders
+          </Text>
+          <View style={styles.headerButtons}>
+            <DebugMenu onReset={handleAppReset} />
+            <TouchableOpacity onPress={toggleTheme} style={styles.headerButton}>
+              <Ionicons
+                name={isDark ? "sunny" : "moon"}
+                size={24}
+                color={theme.colors.primary}
+              />
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => router.push("/reminders/add-reminder")}
+              style={styles.headerButton}
+            >
+              <Ionicons name="add" size={30} color={theme.colors.primary} />
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
+          {renderSection("For Today", todayTasks)}
+          {renderSection("To Do Also", noScheduleTasks)}
+          {renderSection("Upcoming", upcomingTasks, true)}
+        </ScrollView>
+
+        <TaskVerificationModal
+          visible={verificationModalVisible}
+          onClose={() => setVerificationModalVisible(false)}
+          onConfirm={handleVerificationConfirm}
+        />
+      </View>
+    </SafeAreaWrapper>
   );
 }
 
@@ -235,14 +313,13 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     padding: 16,
-    paddingTop: 60,
   },
   headerButtons: {
     flexDirection: "row",
     alignItems: "center",
     gap: 16,
   },
-  themeButton: {
+  headerButton: {
     padding: 4,
   },
   title: {

@@ -1,6 +1,7 @@
 // components/LabelChip.tsx
 import React from "react";
 import { Text, TouchableOpacity, StyleSheet } from "react-native";
+import { useTheme } from "../context/ThemeContext";
 
 interface Props {
   label: string;
@@ -10,15 +11,22 @@ interface Props {
 }
 
 export default function LabelChip({ label, color, selected, onPress }: Props) {
+  const { theme } = useTheme();
+
   return (
     <TouchableOpacity
       onPress={onPress}
       style={[
         styles.chip,
-        { backgroundColor: selected ? color : "#e5e7eb", borderColor: color },
+        {
+          backgroundColor: selected ? color : theme.colors.border,
+          borderColor: color,
+        },
       ]}
     >
-      <Text style={[styles.text, { color: selected ? "#fff" : "#111" }]}>
+      <Text
+        style={[styles.text, { color: selected ? "#fff" : theme.colors.text }]}
+      >
         {label}
       </Text>
     </TouchableOpacity>
